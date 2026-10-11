@@ -1,98 +1,140 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TextInput, Pressable, FlatList, Alert} from 'react-native'
+import { useState, useCallback } from 'react'
+import { useFocusEffect } from 'expo-router'
+import { Product, getProducts, addProduct, deleteProduct } from '@/db/products'
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function ProductScreen() {
+    const [products, setProducts] = useState<Product[]>([])
+    const [name, setName] = useState('')
+    const [price, setPrice] = useState('')
+    const [quantity, setQuantity] = useState('')
+    const [limit, setLimit] = useState('')
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
+    useFocusEffect(
+        useCallback(() => {
+            setProducts(getProducts())
+        }, [])
+    )
+    
+    function handleAdd() {
+        const priceNum = parseInt(price, 10)
+        const qtyNum = parseInt(quantity, 10)
+        const limitNum = parseInt(limit, 10)
+
+        if(!name.trim || isNaN(priceNum) || isNaN(qtyNum) || isNaN(limitNum)) {
+            Alert.alert('Missing info', 'Please fill in every field with valid numbers.')
+            return
+        }
+
+        addProduct(name.trim(), priceNum, qtyNum, limitNum)
+        setProducts(getProducts())
+        setName('')
+        setPrice('')
+        setQuantity('')
+        setLimit('5')
+    }
+
+    function handleDelete(item: Product) {
+        Alert.alert('Delete product', `Delete "${item.name}"?`, [
+            { text: 'Cancel', style: 'cancel'},
+            { text: 'Delete', 
+                style: 'destructive',
+                onPress: () => {
+                    deleteProduct(item.id);
+                    setProducts(getProducts)
+                }
+            }
+        ])
+    }
+
     return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+        <View style={styles.container}>
+            <View style={styles.form}>
+                <TextInput
+                    style={styles.input}
+                    placeholder='Product name'
+                    value={name}
+                    onChangeText={setName}
+                />
+                    
+                <View style={styles.row}>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+                    <TextInput
+                        style={[styles.input, styles.flex]}
+                        placeholder='Price'
+                        keyboardType='numeric'
+                        value={price}
+                        onChangeText={setPrice}
+                    />
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+                    <TextInput
+                        style={[styles.input, styles.flex]}
+                        placeholder='Stock'
+                        keyboardType='numeric'
+                        value={quantity}
+                        onChangeText={setQuantity}
+                    />
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+                    <TextInput
+                        style={[styles.input, styles.flex]}
+                        placeholder='Low at'
+                        keyboardType='numeric'
+                        value={limit}
+                        onChangeText={setLimit}
+                    />
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
-  );
+                </View>
+
+                <Pressable style={styles.button} onPress={(handleAdd)}>
+                    <Text style={styles.buttonText}>Add Product</Text>
+                </Pressable>
+            </View>
+
+            <FlatList
+                data={products}
+                keyExtractor={(item) => item.id.toString()}
+                keyboardShouldPersistTaps='handled'
+                ListEmptyComponent={<Text style={styles.empty}>No products yet. Add your first product</Text>}
+                renderItem={({ item }) => {
+                    const isLow = item.quantity <= item.low_stock_limit
+                    return (
+                        <Pressable style={styles.item} onLongPress={() => handleDelete(item)}>
+                            <View style={styles.flex}>
+                                <Text style={styles.itemName}>{item.name}</Text>
+                                <Text style={styles.itemPrice}>{item.price}</Text>
+                                <Text style={[styles.qty, isLow && styles.qtyLow]}>
+                                {item.quantity} {isLow ? '(low)' : ''}
+                                </Text>
+                            </View>
+                        </Pressable>
+                    )
+                }}
+            >
+
+            </FlatList>
+        </View>
+    )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+  container: { flex: 1, backgroundColor: '#fff' },
+  form: { padding: 16, borderBottomWidth: 1, borderColor:'#ddd'},
+  row: { flexDirection: 'row', gap: 8 },
+  flex: { flex: 1 },
+  input: {
+    borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom:8 
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  button: {
+    backgroundColor: '#2e7d32', padding: 12,
+    borderRadius: 8, alignItems: 'center'
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  buttonText: { color: '#fff', fontWeight: 'bold' },
+  item: {
+    flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderColor: '#eee'
   },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
+  itemName: { fontSize: 16, fontWeight: '600' },
+  itemPrice: { color: '#666', marginTop: 2 },
+  qty: { fontSize: 16, fontWeight: 'bold' },
+  qtyLow: { color: '#c62828' },
+  empty: { textAlign: 'center', marginTop: 40, color: '#888' }
+})
