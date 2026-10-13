@@ -11,7 +11,7 @@ export function initDatabase() {
             quantity INTEGER NOT NULL DEFAULT 0,
             low_stock_limit INTEGER NOT NULL DEFAULT 5
         );
-        CREATE TABLE IF NOT EXISTS sale (
+        CREATE TABLE IF NOT EXISTS sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             product_id INTEGER NOT NULL,
             quantity INTEGER NOT NULL,
