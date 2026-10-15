@@ -100,8 +100,8 @@ export default function ProductScreen() {
                     const isLow = item.quantity <= item.low_stock_limit
                     return (
                         <Pressable style={styles.item} 
+                            onPress={() => router.push({ pathname: '/edit_product', params: { id: item.id } })}
                             onLongPress={() => handleDelete(item)} 
-                            onPress={() => router.push({ pathname: '/edit-product', params: { id: item.id } })}
                         >
                             <View style={styles.flex}>
                                 <Text style={styles.itemName}>{item.name}</Text>

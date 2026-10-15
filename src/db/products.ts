@@ -29,7 +29,7 @@ export function deleteProduct(id: number) {
 }
 
 export function getProduct(id: number): Product | null {
-    return db.getFirstSync<Product>('SELECT * FROM product WHERE id = ?', [id])
+    return db.getFirstSync<Product>('SELECT * FROM products WHERE id = ?', [id])
 }
 
 export function updateProduct(

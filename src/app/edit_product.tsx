@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-nativ
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { getProduct, updateProduct, restockProduct } from "@/db/products";
 
+
 export default function EditProductScreen() {
     const { id } = useLocalSearchParams<{ id: string }>()
     const router = useRouter()
