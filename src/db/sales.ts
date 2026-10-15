@@ -25,3 +25,22 @@ export function recordSale(productId: number, quantity: number) {
         )
     })
 }
+
+export type RecentSale = {
+    id: number
+    name: string | null
+    quantity: number
+    total: number
+    sold_at: string
+}
+
+export function getRecentSales(limit = 30): RecentSale[] {
+    return db.getAllSync<RecentSale>(
+        `SELECT s.id, p.name AS name, s.quantity, s.total, s.sold_at
+        FROM sales s
+        LEFT JOIN products p ON p.id = s.product_id
+        ORDER BY s.sold_at DESC
+        LIMIT ?`,
+        [limit]
+    )
+}

@@ -1,9 +1,10 @@
 import { View, Text, StyleSheet, TextInput, Pressable, FlatList, Alert} from 'react-native'
 import { useState, useCallback } from 'react'
-import { useFocusEffect } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { Product, getProducts, addProduct, deleteProduct } from '@/db/products'
 
 export default function ProductScreen() {
+    const router = useRouter()
     const [products, setProducts] = useState<Product[]>([])
     const [name, setName] = useState('')
     const [price, setPrice] = useState('')
@@ -98,7 +99,10 @@ export default function ProductScreen() {
                 renderItem={({ item }) => {
                     const isLow = item.quantity <= item.low_stock_limit
                     return (
-                        <Pressable style={styles.item} onLongPress={() => handleDelete(item)}>
+                        <Pressable style={styles.item} 
+                            onLongPress={() => handleDelete(item)} 
+                            onPress={() => router.push({ pathname: '/edit-product', params: { id: item.id } })}
+                        >
                             <View style={styles.flex}>
                                 <Text style={styles.itemName}>{item.name}</Text>
                                 <Text style={styles.itemPrice}>{item.price}</Text>
