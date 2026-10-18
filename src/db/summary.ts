@@ -40,7 +40,7 @@ export function getTopProducts(sinceIso: string, limit = 5): TopProduct[] {
 export function getLowStock(): LowStockItem[] {
     return db.getAllSync<LowStockItem>(
         `SELECT id, name, quantity FROM products
-        WHERE quantity <= low_stock_limit
-        ORDER BY quantity ASC`
+        WHERE quantity <= low_stock_limit AND archived = 0
+        `
     )
 }

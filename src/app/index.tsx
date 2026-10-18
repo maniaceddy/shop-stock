@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TextInput, Pressable, FlatList, Alert} from 're
 import { useState, useCallback } from 'react'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { Product, getProducts, addProduct, deleteProduct } from '@/db/products'
+import { formatMoney, MAX_PRICE, MAX_STOCK } from '@/utils/format';
 
 export default function ProductScreen() {
     const router = useRouter()
@@ -10,11 +11,16 @@ export default function ProductScreen() {
     const [price, setPrice] = useState('')
     const [quantity, setQuantity] = useState('')
     const [limit, setLimit] = useState('')
+    const [search, setSearch] = useState('')
 
     useFocusEffect(
         useCallback(() => {
             setProducts(getProducts())
         }, [])
+    )
+
+    const visible = products.filter((p) => 
+        p.name.toLowerCase().includes(search.trim().toLowerCase())
     )
     
     function handleAdd() {
@@ -22,8 +28,8 @@ export default function ProductScreen() {
         const qtyNum = parseInt(quantity, 10)
         const limitNum = parseInt(limit, 10)
 
-        if(!name.trim || isNaN(priceNum) || isNaN(qtyNum) || isNaN(limitNum)) {
-            Alert.alert('Missing info', 'Please fill in every field with valid numbers.')
+        if(!name.trim || isNaN(priceNum) || isNaN(qtyNum) || isNaN(limitNum) || priceNum <= 0 || qtyNum < 0 || limitNum < 0 || priceNum > MAX_PRICE || qtyNum > MAX_STOCK) {
+            Alert.alert('Check your input', 'Price must be between and 100,000,000. Stock and limit can\'t be negative or above 1,000,000.')
             return
         }
 
@@ -36,7 +42,7 @@ export default function ProductScreen() {
     }
 
     function handleDelete(item: Product) {
-        Alert.alert('Delete product', `Delete "${item.name}"?`, [
+        Alert.alert('Remove', `Remove "${item.name}"? Its past sales are kept.`, [
             { text: 'Cancel', style: 'cancel'},
             { text: 'Delete', 
                 style: 'destructive',
@@ -91,11 +97,21 @@ export default function ProductScreen() {
                 </Pressable>
             </View>
 
+            <TextInput
+                style={styles.search}
+                placeholder="Search products..."
+                value={search}
+                onChangeText={setSearch}
+            />
+
             <FlatList
-                data={products}
+                data={visible}
                 keyExtractor={(item) => item.id.toString()}
                 keyboardShouldPersistTaps='handled'
-                ListEmptyComponent={<Text style={styles.empty}>No products yet. Add your first product</Text>}
+                ListEmptyComponent={<Text style={styles.empty}>
+                                        {search ? 'No products match your search.' : 'No products yet. Add your first one above.'}
+                                    
+                                    </Text>}
                 renderItem={({ item }) => {
                     const isLow = item.quantity <= item.low_stock_limit
                     return (
@@ -104,8 +120,8 @@ export default function ProductScreen() {
                             onLongPress={() => handleDelete(item)} 
                         >
                             <View style={styles.flex}>
-                                <Text style={styles.itemName}>{item.name}</Text>
-                                <Text style={styles.itemPrice}>{item.price}</Text>
+                                <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                                <Text style={styles.itemPrice}>{formatMoney(item.price)}</Text>
                                 <Text style={[styles.qty, isLow && styles.qtyLow]}>
                                 {item.quantity} {isLow ? '(low)' : ''}
                                 </Text>
@@ -127,6 +143,10 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   input: {
     borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom:8 
+  },
+  search: {
+    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
+    padding: 10, margin: 12, backgroundColor: '#fafafa'
   },
   button: {
     backgroundColor: '#2e7d32', padding: 12,

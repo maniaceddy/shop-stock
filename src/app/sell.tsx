@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react'
+import { formatMoney } from '@/utils/format';
+
 import {
     View, Text, TextInput, Pressable, FlatList, StyleSheet, Alert
 }  from 'react-native'
@@ -10,6 +12,7 @@ export default function SellScreen() {
     const [products, setProducts] = useState<Product[]>([])
     const [selectedId, setSelectedId] = useState<number | null>(null)
     const [qty, setQty] = useState('1')
+    const [search, setSearch] = useState('')
 
     useFocusEffect(
         useCallback(() => {
@@ -19,9 +22,14 @@ export default function SellScreen() {
         }, [])
     )
 
+    
     const selected = products.find((p) => p.id === selectedId) ?? null
     const qtyNum = parseInt(qty, 10)
     const total = selected && !isNaN(qtyNum) ? selected.price * qtyNum : 0
+
+    const visible = products.filter((p) =>
+        p.name.toLowerCase().includes(search.trim().toLowerCase())
+    )
 
     function handleSell() {
         if(!selected) {
@@ -41,7 +49,7 @@ export default function SellScreen() {
         }
 
         const remaining = selected.quantity - qtyNum
-        const message = `Sold ${qtyNum} x ${selected.name} for MK ${total}`
+        const message = `Sold ${qtyNum} x ${selected.name} for MK ${formatMoney(total)}`
 
         if (remaining <= selected.low_stock_limit) {
             Alert.alert('Sale recorded', `${message}\n\nLock stock: only ${remaining}`)
@@ -52,16 +60,25 @@ export default function SellScreen() {
         setProducts(getProducts())
         setSelectedId(null)
         setQty('1')
+        setSearch('')
     }
 
     return (
         <View style={styles.container}>
+            <TextInput
+                style={styles.search}
+                placeholder="Search products..."
+                value={search}
+                onChangeText={setSearch}
+            />
             <FlatList
-                data={products}
+                data={visible}
                 keyExtractor={(item) => item.id.toString()}
+                keyboardShouldPersistTaps="handled"
                 ListEmptyComponent={
-                    <Text style={styles.empty}>No products yet. Add some on the Products tab.</Text>
-                }
+                    <Text style={styles.empty}>
+                        {search ? 'No products match your search.' : 'No products yet. Add some on the Products tab.'}
+                    </Text>                }
                 renderItem={({ item }) => {
                     const outOfStock = item.quantity <= 0
                     const isSelected = item.id === selectedId
@@ -78,8 +95,8 @@ export default function SellScreen() {
                         >
 
                             <View style={styles.flex}>
-                                <Text style={styles.itemName}>{item.name}</Text>
-                                <Text style={styles.itemPrice}>MK {item.price}</Text>
+                                <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                                <Text style={styles.itemPrice}>MK {formatMoney(item.price)}</Text>
                             </View>
                             <Text style={styles.stock}>
                                 {outOfStock ? 'Out of stock' : `${item.quantity} in stock`}
@@ -103,7 +120,7 @@ export default function SellScreen() {
                         placeholder='Qty'
                     />
 
-                    <Text style={styles.total}>MK {total}</Text>
+                    <Text style={styles.total}>MK {formatMoney(total)}</Text>
                 </View>
                 <Pressable style={styles.button} onPress={handleSell}>
                     <Text style={styles.buttonText}>Sell</Text>
@@ -120,6 +137,10 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: 'row', alignItems: 'center', padding:16,
     borderBottomWidth: 1, borderBottomStartRadius: '#eee'
+  },
+  search: {
+    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
+    padding: 10, margin: 12, backgroundColor: '#fafafa',
   },
   itemSelected: { backgroundColor: '#e8f5e9'},
   itemDisabled: { opacity: 0.4 },

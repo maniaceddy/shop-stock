@@ -21,4 +21,9 @@ export function initDatabase() {
             FOREIGN KEY (product_id) REFERENCES products(id)
         );
     `)
+
+    const columns = db.getAllSync<{ name: string }>('PRAGMA table_info(products)')
+    if (!columns.some((c) => c.name === 'archived')) {
+        db.execSync('ALTER TABLE products ADD COLUMN archived INTEGER NOT NULL DEFAULT 0')
+    }
 }

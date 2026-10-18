@@ -1,18 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-native'
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { getProduct, updateProduct, restockProduct } from "@/db/products";
+import { MAX_PRICE, MAX_STOCK  } from "@/utils/format";
 
 
 export default function EditProductScreen() {
     const { id } = useLocalSearchParams<{ id: string }>()
     const router = useRouter()
 
-    const [product] = useState(() => getProduct(Number(id)))
+    const [product, setProduct] = useState(() => getProduct(Number(id)))
     const [name, setName] = useState(product?.name ?? '')
-    const [price, setPrice] = useState(String(product?.price))
-    const [limit, setLimit] = useState(String(product?.low_stock_limit))
+    const [price, setPrice] = useState(String(product?.price ?? ''))
+    const [limit, setLimit] = useState(String(product?.low_stock_limit ?? 5))
     const [restock, setRestock] = useState('')
+
+    useEffect(() => {
+        const currentProduct = getProduct(Number(id))
+
+        setProduct(currentProduct)
+        setName(currentProduct?.name ?? '')
+        setPrice(String(currentProduct?.price ?? ''))
+        setLimit(String(currentProduct?.low_stock_limit ?? 5))
+        setRestock('')
+    }, [id])
 
     if(!product) {
         return (
@@ -26,8 +37,8 @@ export default function EditProductScreen() {
         const priceNum = parseInt(price, 10)
         const limitNum = parseInt(limit, 10)
     
-        if(!name.trim() || isNaN(priceNum) || isNaN(limitNum)) {
-            Alert.alert('Missing info', 'Fill in every field with valid numbers')
+        if(!name.trim() || isNaN(priceNum) || isNaN(limitNum) || priceNum <= 0 || limitNum < 0 || priceNum > MAX_PRICE) {
+            Alert.alert('Check your input', "Price must be between 1 and 100,000,000 and the limit can't be negative.")
             return
         }
         updateProduct(product!.id, name.trim(), priceNum, limitNum)
@@ -36,8 +47,8 @@ export default function EditProductScreen() {
 
     function handleRestock() {
         const amount = parseInt(restock, 10)
-        if(isNaN(amount) || amount <= 0) {
-            Alert.alert('Invalid amount', 'Enter how many items arrived (1 or more).')
+        if(isNaN(amount) || amount <= 0 || amount > MAX_STOCK) {
+            Alert.alert('Invalid amount', 'Enter between 1 and 1,000,000 items.')
             return
         }
         restockProduct(product!.id, amount)

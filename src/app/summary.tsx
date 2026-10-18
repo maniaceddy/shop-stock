@@ -5,6 +5,8 @@ import {
     Totals, TopProduct, LowStockItem, startOfDay, getTotalsSince, getTopProducts, getLowStock
 } from '@/db/summary'
 import { RecentSale, getRecentSales } from '@/db/sales'
+import { formatMoney } from '@/utils/format';
+
 
 type Period = 'today' | 'week';
 
@@ -50,7 +52,7 @@ export default function SummaryScreen() {
 
                     <View style={styles.cards}>
                         <View style={styles.card}>
-                            <Text style={styles.cardValue}>MK {totals.revenue}</Text>
+                            <Text style={styles.cardValue}>MK {formatMoney(totals.revenue)}</Text>
                             <Text style={styles.cardLabel}>Revenue</Text>
                         </View>
                         <View style={styles.card}>
@@ -72,7 +74,7 @@ export default function SummaryScreen() {
                                     <Text style={styles.rank}>{index + 1}</Text>
                                     <Text style={styles.listName}>{p.name}</Text>
                                     <Text style={styles.listValue}>
-                                        {p.units} sold - MK {p.revenue}
+                                        {p.units} sold - MK {formatMoney(p.revenue)}
                                     </Text>
                                 </View>
                             )
@@ -105,7 +107,7 @@ export default function SummaryScreen() {
                                     </Text>
                                     <Text style={styles.empty}>{new Date(s.sold_at).toLocaleString()}</Text>
                                 </View>
-                                <Text style={styles.listValue}>MK {s.total}</Text>
+                                <Text style={styles.listValue}>MK {formatMoney(s.total)}</Text>
                             </View>
                         ))
                     )}

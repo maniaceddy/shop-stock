@@ -6,11 +6,18 @@ export type Product = {
     price: number 
     quantity: number
     low_stock_limit: number
+    archived: number
 }
 
 export function getProducts(): Product[] {
-    return db.getAllSync<Product>('SELECT * FROM products ORDER BY name')
-} 
+  return db.getAllSync<Product>(
+    'SELECT * FROM products WHERE archived = 0 ORDER BY name'
+  );
+}
+
+export function deleteProduct(id: number) {
+  db.runSync('UPDATE products SET archived = 1 WHERE id = ?', [id]);
+}
 
 export function addProduct(
     name: string,
@@ -22,10 +29,6 @@ export function addProduct(
         'INSERT INTO products (name, price, quantity, low_stock_limit) VALUES (?, ?, ?, ?)',
         [name, price, quantity, lowStockLimit]
     )
-}
-
-export function deleteProduct(id: number) {
-    db.runSync('DELETE FROM products WHERE id = ?', [id])
 }
 
 export function getProduct(id: number): Product | null {
