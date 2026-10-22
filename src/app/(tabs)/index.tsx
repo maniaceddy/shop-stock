@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { Product, getProducts, addProduct, deleteProduct } from '@/db/products'
 import { formatMoney, MAX_PRICE, MAX_STOCK } from '@/utils/format';
+import { colors, radius, shadow } from '@/utils/theme';
 
 export default function ProductScreen() {
     const router = useRouter()
@@ -38,7 +39,7 @@ export default function ProductScreen() {
         setName('')
         setPrice('')
         setQuantity('')
-        setLimit('5')
+        setLimit('')
     }
 
     function handleDelete(item: Product) {

@@ -44,3 +44,26 @@ export function getRecentSales(limit = 30): RecentSale[] {
         [limit]
     )
 }
+
+export function voidSale(saleId: number) {
+    db.withTransactionSync(() => {
+        const sale = db.getFirstSync<{ product_id: number; quantity: number }>(
+            'SELECT product_id, quantity FROM sales WHERE id = ?',
+            [saleId]
+        )
+
+        if (!sale) {
+            throw new Error('This sale has already been undone')
+        }
+
+        const result = db.runSync('DELETE FROM sales WHERE id = ?', [saleId])
+        if (result.changes !== 1) {
+            throw new Error('THe sale could not be removed.')
+        }
+
+        db.runSync('UPDATE products SET quantity = quantity + ? WHERE id = ?',
+            [sale.quantity, sale.product_id]
+        )
+
+    })
+}

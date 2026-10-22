@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { formatMoney } from '@/utils/format';
+import { colors, radius, shadow } from '@/utils/theme';
 
 import {
     View, Text, TextInput, Pressable, FlatList, StyleSheet, Alert
@@ -52,7 +53,7 @@ export default function SellScreen() {
         const message = `Sold ${qtyNum} x ${selected.name} for MK ${formatMoney(total)}`
 
         if (remaining <= selected.low_stock_limit) {
-            Alert.alert('Sale recorded', `${message}\n\nLock stock: only ${remaining}`)
+            Alert.alert('Sale recorded', `${message}\n\nLow stock: only ${remaining} left.`)
         } else {
             Alert.alert('Sale recorded', message)
         }
@@ -131,34 +132,41 @@ export default function SellScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'center'},
-  item: {
-    flexDirection: 'row', alignItems: 'center', padding:16,
-    borderBottomWidth: 1, borderBottomStartRadius: '#eee'
-  },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   search: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-    padding: 10, margin: 12, backgroundColor: '#fafafa',
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+    padding: 12, margin: 12, backgroundColor: colors.surface,
   },
-  itemSelected: { backgroundColor: '#e8f5e9'},
+  item: {
+    flexDirection: 'row', alignItems: 'center', padding: 14,
+    marginHorizontal: 12, marginBottom: 8, backgroundColor: colors.surface,
+    borderRadius: radius.md, borderWidth: 1, borderColor: 'transparent', ...shadow,
+  },
+  itemSelected: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
   itemDisabled: { opacity: 0.4 },
-  itemName: { fontSize: 16, fontWeight: 'bold' },
-  itemPrice: { color: '#666', marginTop: 2 },
-  stock: { color: '#444' },
-  empty: { textAlign: 'center', marginTop: 40, color: '#888' },
+  itemName: { fontSize: 16, fontWeight: '600', color: colors.text },
+  itemPrice: { color: colors.muted, marginTop: 2 },
+  stock: { color: colors.muted },
+  empty: { textAlign: 'center', marginTop: 40, color: colors.muted },
   checkout: {
-    padding: 16, borderTopWidth: 1, borderColor: '#ddd', backgroundColor: '#fafafa'
+    padding: 16, backgroundColor: colors.surface, borderTopWidth: 1,
+    borderColor: colors.border, borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg, elevation: 8,
   },
-  selectedText: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  selectedText: { fontSize: 16, fontWeight: '700', marginBottom: 8, color: colors.text },
   input: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, backgroundColor: '#fff'
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+    padding: 12, backgroundColor: colors.background, color: colors.text,
   },
-  total: { fontSize: 18, fontWeight: 'bold', minWidth: 110, textAlign: 'right' },
+  total: {
+    fontSize: 20, fontWeight: '700', minWidth: 120,
+    textAlign: 'right', color: colors.primary,
+  },
   button: {
-    backgroundColor: '#2e7d32', padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 12
+    backgroundColor: colors.primary, padding: 14, borderRadius: radius.md,
+    alignItems: 'center', marginTop: 12,
   },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16}
-
-})
+  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+});

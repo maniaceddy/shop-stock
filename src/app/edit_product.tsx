@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet, Alert } from 'react-nativ
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { getProduct, updateProduct, restockProduct } from "@/db/products";
 import { MAX_PRICE, MAX_STOCK  } from "@/utils/format";
+import { colors, radius, shadow } from '@/utils/theme';
 
 
 export default function EditProductScreen() {
@@ -99,21 +100,17 @@ export default function EditProductScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16, backgroundColor: '#fff' },
-    label: { fontWeight: '600', marginBottom: 4, marginTop: 8 },
-    input: {
-        borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-        padding: 10, marginBottom: 8
-    }, 
-    buttton: {
-        backgroundColor: '#2e7d32', padding: 12,
-        borderRadius: 8, alignItems: 'center', marginTop: 8
-    },
-    button: {
-        backgroundColor: '#2e7d32', padding: 12,
-        borderRadius: 8, alignItems: 'center', marginTop: 8,
-    },
-    buttonAlt: { backgroundColor: '#1565c0' },
-    buttonText: { color: '#fff', fontWeight: 'bold' },
-    divider: { height: 1, backgroundColor: '#ddd', marginVertical: 20 }
-})
+  container: { flex: 1, padding: 16, backgroundColor: colors.background },
+  label: { fontWeight: '600', marginBottom: 4, marginTop: 8, color: colors.text },
+  input: {
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+    padding: 12, marginBottom: 8, backgroundColor: colors.surface, color: colors.text,
+  },
+  button: {
+    backgroundColor: colors.primary, padding: 14, borderRadius: radius.md,
+    alignItems: 'center', marginTop: 8,
+  },
+  buttonAlt: { backgroundColor: colors.accent },
+  buttonText: { color: '#fff', fontWeight: '700' },
+  divider: { height: 1, backgroundColor: colors.border, marginVertical: 20 },
+});

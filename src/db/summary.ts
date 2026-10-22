@@ -1,5 +1,6 @@
 import { db } from './database'
 
+
 export type Totals = { revenue: number; items: number; count: number; }
 export type TopProduct = { name: string; units: number; revenue: number }
 export type LowStockItem = { id: number; name: string; quantity: number; }
