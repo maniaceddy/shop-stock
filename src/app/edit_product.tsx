@@ -86,7 +86,7 @@ export default function EditProductScreen() {
             <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                placeholder="How many arrived"
+                placeholder="Add new stock"
                 value={restock}
                 onChangeText={setRestock}
             />

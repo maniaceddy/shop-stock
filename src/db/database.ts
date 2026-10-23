@@ -3,7 +3,7 @@ import * as SQLite from 'expo-sqlite'
 export const db = SQLite.openDatabaseSync('shop.db')
 
 export function initDatabase() {
-    db.execSync('DROP TABLE IF EXISTS users');
+    // db.execSync('DROP TABLE IF EXISTS users');
     db.execSync(`
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

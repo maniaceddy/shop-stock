@@ -45,25 +45,69 @@ export function getRecentSales(limit = 30): RecentSale[] {
     )
 }
 
-export function voidSale(saleId: number) {
+// export function voidSale(saleId: number) {
+//     db.withTransactionSync(() => {
+//         const sale = db.getFirstSync<{ product_id: number; quantity: number }>(
+//             'SELECT product_id, quantity FROM sales WHERE id = ?',
+//             [saleId]
+//         )
+
+//         if (!sale) {
+//             throw new Error('This sale has already been undone')
+//         }
+
+//         const result = db.runSync('DELETE FROM sales WHERE id = ?', [saleId])
+//         if (result.changes !== 1) {
+//             throw new Error('THe sale could not be removed.')
+//         }
+
+//         db.runSync('UPDATE products SET quantity = quantity + ? WHERE id = ?',
+//             [sale.quantity, sale.product_id]
+//         )
+
+//     })
+// }
+
+export function returnFromSale(saleId: number, returnQty: number) {
     db.withTransactionSync(() => {
-        const sale = db.getFirstSync<{ product_id: number; quantity: number }>(
-            'SELECT product_id, quantity FROM sales WHERE id = ?',
-            [saleId]
-        )
+        const sale = db.getFirstSync<{
+            product_id: number
+            quantity: number
+            unit_price: number
+        }>('SELECT product_id, quantity, unit_price FROM sales WHERE id =?', [saleId])
 
         if (!sale) {
-            throw new Error('This sale has already been undone')
+            throw new Error('This sale no longer exists.')
         }
 
+        if (!Number.isInteger(returnQty) || returnQty <= 0) {
+            throw new Error('Enter a quantity of 1 or more')
+        }
+
+        if (returnQty > sale.quantity) {
+            throw new Error(`Only ${sale.quantity} were sold in this sale.`)
+        }
+
+        if (returnQty === sale.quantity) {
         const result = db.runSync('DELETE FROM sales WHERE id = ?', [saleId])
+        
         if (result.changes !== 1) {
-            throw new Error('THe sale could not be removed.')
+            throw new Error('Full return failed: sale row not found.');
         }
+        } else {
+        const newQty = sale.quantity - returnQty;
+        const newTotal = newQty * sale.unit_price;
 
-        db.runSync('UPDATE products SET quantity = quantity + ? WHERE id = ?',
-            [sale.quantity, sale.product_id]
+        const result = db.runSync(
+            'UPDATE sales SET quantity = ?, total = ? WHERE id = ?',
+            [newQty, newTotal, saleId]
         )
 
+        if (result.changes !== 1) {
+            throw new Error('Partial return failed: sale row not updated.');
+        }
+        }
+        db.runSync('UPDATE products SET quantity = quantity + ? WHERE id = ?', 
+            [returnQty, sale.product_id])
     })
 }

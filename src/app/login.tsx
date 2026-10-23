@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, Pressable, StyleSheet,
-  KeyboardAvoidingView, Platform, ActivityIndicator,
+  KeyboardAvoidingView, Platform, ActivityIndicator, Image, ImageBackground
 } from 'react-native';
 import { useAuth } from '@/context/auth';
 import { hasUser, createUser, checkLogin } from '@/db/auth';
@@ -57,6 +57,12 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.hero}>
+          <Image
+            source={require('../../assets/images/logo.png')}
+            style={styles.logoImage}
+            resizeMode='contain'
+          />
+
         <Text style={styles.logo}>ShopStock</Text>
         <Text style={styles.tagline}>Stock and Sales. Simplified.</Text>
       </View>
@@ -130,4 +136,5 @@ const styles = StyleSheet.create({
   buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   switchBtn: { marginTop: 16, alignItems: 'center' },
   switchText: { color: colors.primary, fontWeight: '600' },
+  logoImage: { width: 96, height: 96, borderRadius: 20, marginBottom: 12}
 });
